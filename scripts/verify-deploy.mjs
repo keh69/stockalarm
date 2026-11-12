@@ -5,7 +5,7 @@
 //       (종료코드 3 → 원인을 찾아 고치고 다시 푸시한 뒤 이 스크립트를 다시 실행).
 import { readFileSync } from "node:fs";
 
-const site = process.env.SITE_URL ?? "https://stockprofit.vercel.app";
+const site = process.env.SITE_URL ?? "https://stockprofit-psi.vercel.app";
 const repo = "keh69/stockprofit";
 const LIMIT_MS = 60_000;
 const version =
