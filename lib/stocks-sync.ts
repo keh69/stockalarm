@@ -1,5 +1,6 @@
 import { db } from "@/lib/supabase-server";
 import { T } from "@/lib/tables";
+import { bumpHoldingsRev } from "@/lib/holdings";
 
 // 공공데이터포털 '금융위원회_KRX상장종목정보' (GetKrxListedInfoService/getItemInfo)
 const ENDPOINT = "https://apis.data.go.kr/1160100/service/GetKrxListedInfoService/getItemInfo";
@@ -57,5 +58,6 @@ export async function syncStocks(): Promise<{ basDt: string; count: number }> {
     const { error } = await db().from(T.stocks).upsert(list.slice(i, i + 500));
     if (error) throw error;
   }
+  await bumpHoldingsRev(); // 종목명이 바뀌었을 수 있으므로
   return { basDt, count: list.length };
 }

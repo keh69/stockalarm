@@ -1,5 +1,5 @@
 import { db } from "@/lib/supabase-server";
-import { profitPct, type HoldingRow } from "@/lib/holdings";
+import { bumpHoldingsRev, profitPct, type HoldingRow } from "@/lib/holdings";
 import type { CachedQuote } from "@/lib/quotes";
 import { sendTelegram } from "./telegram";
 import { T } from "@/lib/tables";
@@ -13,11 +13,13 @@ const sign = (n: number) => (n >= 0 ? "+" : "") + n.toFixed(2);
 /**
  * 시세로 알람 조건을 평가한다. 상태 전환은 `WHERE alert_state='armed'` 조건부 UPDATE로
  * 원자적으로 처리해, 탭 폴링과 cron이 동시에 돌아도 한 번만 발송된다.
+ * 상태가 바뀐 종목은 넘겨받은 holdings 객체에도 그대로 반영한다(호출한 쪽이 DB를 다시 읽지 않아도 되게).
  * 반환값: 이번 호출에서 새로 발동한 holding id 목록
  */
 export async function evaluateAlerts(holdings: HoldingRow[], quotes: Map<string, CachedQuote>): Promise<string[]> {
   const fired: string[] = [];
   let lastSent: number | null = null; // 가장 최근 알람 발송 시각 (조건을 만족하는 종목이 생겼을 때만 조회)
+  let changed = false;
 
   for (const h of holdings) {
     const q = quotes.get(h.code);
@@ -27,11 +29,14 @@ export async function evaluateAlerts(holdings: HoldingRow[], quotes: Map<string,
     if (h.alert_state === "triggered") {
       // 수익률이 목표보다 REARM_BAND 아래로 내려가면 다시 무장
       if (pct < h.target_pct - REARM_BAND) {
-        await db()
+        const { data: rearmed } = await db()
           .from(T.holdings)
           .update({ alert_state: "armed", triggered_kind: null, triggered_at: null })
           .eq("id", h.id)
-          .eq("alert_state", "triggered");
+          .eq("alert_state", "triggered")
+          .select("id");
+        if (rearmed?.length) changed = true;
+        Object.assign(h, { alert_state: "armed", triggered_kind: null, triggered_at: null });
       }
       continue;
     }
@@ -46,14 +51,17 @@ export async function evaluateAlerts(holdings: HoldingRow[], quotes: Map<string,
     }
     if (Date.now() - lastSent < COOLDOWN_MS) continue;
 
+    const triggeredAt = new Date().toISOString();
     const { data: won_ } = await db()
       .from(T.holdings)
-      .update({ alert_state: "triggered", triggered_kind: "target", triggered_at: new Date().toISOString() })
+      .update({ alert_state: "triggered", triggered_kind: "target", triggered_at: triggeredAt })
       .eq("id", h.id)
       .eq("alert_state", "armed")
       .select("id");
     if (!won_?.length) continue; // 다른 요청이 먼저 발동시킴
 
+    changed = true;
+    Object.assign(h, { alert_state: "triggered", triggered_kind: "target", triggered_at: triggeredAt });
     fired.push(h.id);
     lastSent = Date.now();
     await db().from(T.alertEvents).insert({
@@ -71,5 +79,6 @@ export async function evaluateAlerts(holdings: HoldingRow[], quotes: Map<string,
 수익률 <b>${sign(pct)}%</b>`,
     );
   }
+  if (changed) await bumpHoldingsRev();
   return fired;
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isCronAuthorized } from "@/lib/auth";
-import { loadHoldings } from "@/lib/holdings";
+import { loadHoldingsCached } from "@/lib/holdings";
 import { getQuotes } from "@/lib/quotes";
 import { isMarketOpen } from "@/lib/quotes/market-hours";
 import { evaluateAlerts } from "@/lib/alerts/evaluate";
@@ -11,9 +11,9 @@ export async function POST(req: Request) {
   if (!isCronAuthorized(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   if (!isMarketOpen()) return NextResponse.json({ skipped: "market closed" });
 
-  const holdings = (await loadHoldings()).filter((h) => h.enabled);
+  const holdings = (await loadHoldingsCached()).filter((h) => h.enabled);
   if (!holdings.length) return NextResponse.json({ checked: 0, fired: [] });
-  const { quotes } = await getQuotes(holdings.map((h) => h.code));
+  const { quotes } = await getQuotes(holdings.map((h) => ({ code: h.code, market: h.market })));
   const fired = await evaluateAlerts(holdings, quotes);
   return NextResponse.json({ checked: holdings.length, fired });
 }

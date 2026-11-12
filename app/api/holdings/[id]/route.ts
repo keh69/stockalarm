@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/supabase-server";
 import { errorMessage } from "@/lib/errors";
 import { snapshotHolding } from "@/lib/history";
+import { bumpHoldingsRev } from "@/lib/holdings";
 import { T } from "@/lib/tables";
 
 const patchSchema = z
@@ -36,6 +37,7 @@ export async function PATCH(req: Request, { params }: Ctx) {
   const { data, error } = await db().from(T.holdings).update(update).eq("id", id).select().maybeSingle();
   if (error) return NextResponse.json({ error: errorMessage(error) }, { status: 500 });
   if (!data) return NextResponse.json({ error: "종목을 찾을 수 없습니다" }, { status: 404 });
+  await bumpHoldingsRev();
   return NextResponse.json({ holding: data });
 }
 
@@ -44,5 +46,6 @@ export async function DELETE(_req: Request, { params }: Ctx) {
   await snapshotHolding(id); // 삭제 당시의 표 한 줄을 기록으로 보관
   const { error } = await db().from(T.holdings).delete().eq("id", id);
   if (error) return NextResponse.json({ error: "삭제 실패" }, { status: 500 });
+  await bumpHoldingsRev();
   return NextResponse.json({ ok: true });
 }

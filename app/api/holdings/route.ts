@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/supabase-server";
 import { getQuotes } from "@/lib/quotes";
-import { isMissingColumn } from "@/lib/holdings";
+import { bumpHoldingsRev, isMissingColumn } from "@/lib/holdings";
 import { errorMessage } from "@/lib/errors";
 import { T } from "@/lib/tables";
 
@@ -49,5 +49,6 @@ export async function POST(req: Request) {
     console.error("[holdings.create]", error);
     return NextResponse.json({ error: errorMessage(error) }, { status: 500 });
   }
+  await bumpHoldingsRev();
   return NextResponse.json({ holding: data }, { status: 201 });
 }
