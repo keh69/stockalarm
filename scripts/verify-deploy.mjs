@@ -6,7 +6,7 @@
 import { readFileSync } from "node:fs";
 
 const site = process.env.SITE_URL ?? "https://stockprofit.vercel.app";
-const repo = "hanhwasung32421-source/stockprofit";
+const repo = "keh69/stockprofit";
 const LIMIT_MS = 60_000;
 const version =
   process.argv[2] ?? /APP_VERSION = "([^"]+)"/.exec(readFileSync(new URL("../lib/version.ts", import.meta.url), "utf8"))?.[1];
