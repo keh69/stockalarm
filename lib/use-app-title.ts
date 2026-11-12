@@ -1,7 +1,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 
 // 화면 상단 제목(=크롬 탭 제목)도 컴퓨터(브라우저)별로 기억한다.
-export const DEFAULT_TITLE = "수익률 알리미";
+export const DEFAULT_TITLE = "주식알리미";
 const KEY = "sp_title";
 const listeners = new Set<() => void>();
 

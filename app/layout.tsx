@@ -3,7 +3,7 @@ import { Toaster } from "sonner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "수익률 알리미",
+  title: "주식알리미",
   description: "보유 종목이 목표 수익률에 도달하면 알려드려요",
 };
 
