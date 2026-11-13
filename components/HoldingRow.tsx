@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bell, BellOff, Check, ChevronDown, ChevronUp, Copy, GripVertical, Pencil, RotateCcw, X } from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Copy, GripVertical, Pencil, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import { copyText } from "@/lib/clipboard";
 import { pct, tone, won } from "@/lib/format";
@@ -99,7 +99,6 @@ export function HoldingRow({
   onDragEnd,
   onEdit,
   onDelete,
-  onToggle,
   onRearm,
   onDateChange,
 }: {
@@ -112,7 +111,6 @@ export function HoldingRow({
   onDragEnd: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onToggle: () => void;
   onRearm: () => void;
   onDateChange: (d: string) => void;
 }) {
@@ -224,9 +222,6 @@ export function HoldingRow({
             <RotateCcw size={15} />
           </button>
         )}
-        <button onClick={onToggle} aria-label={h.enabled ? "알림 끄기" : "알림 켜기"} title={h.enabled ? "알림 끄기" : "알림 켜기"} className="rounded p-1 hover:bg-surface md:p-1.5">
-          {h.enabled ? <Bell size={15} /> : <BellOff size={15} />}
-        </button>
         <button onClick={onEdit} aria-label="수정" title="수정" className="rounded p-1 hover:bg-surface md:p-1.5">
           <Pencil size={15} />
         </button>

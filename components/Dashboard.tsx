@@ -345,7 +345,6 @@ export function Dashboard() {
                 onDateChange={(d) => patch(h, { bought_at: d })}
                 onEdit={() => setEditing(h)}
                 onDelete={() => remove(h)}
-                onToggle={() => patch(h, { enabled: !h.enabled })}
                 onRearm={() => patch(h, { rearm: true })}
               />
             ))}
