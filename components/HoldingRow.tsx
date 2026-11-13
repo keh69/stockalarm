@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bell, BellOff, Check, ChevronDown, ChevronUp, Copy, GripVertical, Minus, Pencil, RotateCcw } from "lucide-react";
+import { Bell, BellOff, Check, ChevronDown, ChevronUp, Copy, GripVertical, Pencil, RotateCcw, X } from "lucide-react";
 import { toast } from "sonner";
 import { copyText } from "@/lib/clipboard";
 import { pct, tone, won } from "@/lib/format";
@@ -245,7 +245,7 @@ export function HoldingRow({
           {copied ? <Check size={15} className="text-up" /> : <Copy size={15} />}
         </button>
         <button onClick={onDelete} aria-label={`${h.name} 삭제`} title="삭제" className="rounded p-1 hover:bg-surface hover:text-up md:p-1.5">
-          <Minus size={15} />
+          <X size={15} />
         </button>
       </div>
     </div>
